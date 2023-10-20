@@ -1,10 +1,49 @@
 import express, { Request, Response } from "express";
+import bodyParser from "body-parser";
+import { ValidationError, Validator } from "jsonschema";
 import { MysqlError } from "mysql";
 import connection from "./db.js";
 
 const TaskRoutes = express.Router();
 
 TaskRoutes.use(express.json());
+
+const urlEncodedParser = bodyParser.urlencoded({extended: true});
+
+Validator.prototype.customFormats.isValidDueDate = function(input: string): boolean {
+    const dueDateVal = parseInt(input);
+    const dateStr = new Date(dueDateVal).toDateString();
+    return dateStr !== "Thu Jan 01 1970";
+}
+
+const v = new Validator();
+
+const taskSchema = {
+    "type": "object",
+    "properties": {
+        "planId": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "taskName": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50
+        },
+        "dueDate": {
+            "type": "string",
+            "format": "isValidDueDate"
+        },
+        "members": {
+            "type": "array",
+            "items": {
+                "type": "integer",
+                "minimum": 1
+            }
+        }
+    },
+    "required": ["planId", "taskName", "dueDate", "members"]
+};
 
 function isMemberExists(task: any, memberId: number): boolean {
     return task.members.findIndex((member: any) => member.memberId === memberId) !== -1;
@@ -115,6 +154,25 @@ TaskRoutes.get("/member/:id", (req: Request, res: Response) => {
             res.send(result);
         }
     });
+});
+
+TaskRoutes.post("/add", urlEncodedParser, (req: Request, res: Response) => {
+
+    const validationRes = v.validate(req.body, taskSchema, {throwAll: true});
+    if(validationRes.valid) {
+        const nowTime = Date.now();
+        const planId = req.body.planId;
+        const taskName = req.body.taskName;
+        const dueDate = req.body.dueDate;
+        const members = req.body.members;
+
+        res.status(200).send({planId, taskName, dueDate, members, nowTime});
+    } else {
+        const allErr: any = [];
+        // console.log('#### Errors',);
+        validationRes.errors.forEach(err => allErr.push(err.path));
+        res.status(400).send(allErr);
+    }
 });
 
 export default TaskRoutes;
