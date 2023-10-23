@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
-import { ValidationError, Validator } from "jsonschema";
+import { Validator } from "jsonschema";
 import { MysqlError } from "mysql";
 import connection from "./db.js";
 
@@ -8,7 +8,8 @@ const TaskRoutes = express.Router();
 
 TaskRoutes.use(express.json());
 
-const urlEncodedParser = bodyParser.urlencoded({extended: true});
+// const urlEncodedParser = bodyParser.urlencoded({extended: true});
+
 
 Validator.prototype.customFormats.isValidDueDate = function(input: string): boolean {
     const dueDateVal = parseInt(input);
@@ -22,8 +23,7 @@ const taskSchema = {
     "type": "object",
     "properties": {
         "planId": {
-            "type": "integer",
-            "minimum": 1
+            "type": "integer"
         },
         "taskName": {
             "type": "string",
@@ -31,14 +31,13 @@ const taskSchema = {
             "maxLength": 50
         },
         "dueDate": {
-            "type": "string",
+            "type": "integer",
             "format": "isValidDueDate"
         },
         "members": {
             "type": "array",
             "items": {
-                "type": "integer",
-                "minimum": 1
+                "type": "integer"
             }
         }
     },
@@ -156,9 +155,8 @@ TaskRoutes.get("/member/:id", (req: Request, res: Response) => {
     });
 });
 
-TaskRoutes.post("/add", urlEncodedParser, (req: Request, res: Response) => {
-
-    const validationRes = v.validate(req.body, taskSchema, {throwAll: true});
+TaskRoutes.post("/add", bodyParser.json({}), (req: Request, res: Response) => {
+    const validationRes = v.validate(req.body, taskSchema);
     if(validationRes.valid) {
         const nowTime = Date.now();
         const planId = req.body.planId;
@@ -166,11 +164,31 @@ TaskRoutes.post("/add", urlEncodedParser, (req: Request, res: Response) => {
         const dueDate = req.body.dueDate;
         const members = req.body.members;
 
-        res.status(200).send({planId, taskName, dueDate, members, nowTime});
+        const query = `insert into task (plan_id, name, start, due, created, updated, notes) values (${planId}, '${taskName}', ${nowTime}, ${dueDate}, ${nowTime}, ${nowTime}, '')`;
+
+        connection.query(query, (err: MysqlError, result: any) => {
+            if(err) {
+                res.status(500).send(`Internal server error ${err.message}`);
+            } else if(result) {
+                const { insertId } = result;
+                if(insertId) {
+                    // Insert into task members
+                    members.forEach((memberId: number) => {
+                        const membersQuery = `insert into taskmembers (task_id, member_id) values (${insertId}, ${memberId})`;
+                        connection.query(membersQuery, (e: MysqlError, result: any) => {
+                            if(e) {
+                                res.status(500).send(`Internal server error ${e}`);
+                            } else if(result) {
+                                res.status(200).send('Task inserted successfully!');
+                            }
+                        });
+                    });
+                }
+            }
+        });
     } else {
         const allErr: any = [];
-        // console.log('#### Errors',);
-        validationRes.errors.forEach(err => allErr.push(err.path));
+        validationRes.errors.forEach(err => allErr.push(err.message));
         res.status(400).send(allErr);
     }
 });
