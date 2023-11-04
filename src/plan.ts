@@ -32,7 +32,7 @@ PlanRoutes.post('/add', urlEncodedParser, (req: Request, res: Response) => {
         const nowTime = Date.now();
 
         // Validating planName for special characters
-        if(! containsSpecialChars(planName)) {
+        if(containsSpecialChars(planName)) {
             connection.query(`insert into plan (name, created, updated) values ("${planName}", ${nowTime}, ${nowTime})`, (err: MysqlError, result: any) => {
                 if(err) {
                     res.status(500).send(err);

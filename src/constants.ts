@@ -1,6 +1,16 @@
 export type Label = {
     color: string;
     value: string;
+};
+
+export type ErrorType = {
+    message: string;
+    path: (string| number)[]
+}
+
+export type CommentType = {
+    comment: string;
+    member: number;
 }
 
 export enum Status {

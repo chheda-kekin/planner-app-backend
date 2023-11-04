@@ -1,4 +1,4 @@
-import  mysql  from 'mysql';
+import  mysql, { MysqlError, Connection }  from 'mysql';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -26,5 +26,17 @@ connection.connect((err) => {
         console.log('Connection created successfully!');
      }
 });
+
+export function executeQuery(query: string, connection: Connection): Promise<any> {
+    return new Promise((resolve, reject) => {
+        connection.query(query, (err: MysqlError, res: any) => {
+            if(err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        });
+    });
+}
 
 export default connection;
