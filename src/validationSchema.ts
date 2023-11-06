@@ -1,3 +1,16 @@
+export const planSchema = {
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50,
+            "format": "containsSpecialChars"
+        }
+    },
+    "required": ["name"]
+};
+
 export const taskSchema = {
     "type": "object",
     "properties": {

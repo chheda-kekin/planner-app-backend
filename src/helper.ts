@@ -1,6 +1,7 @@
 import { Validator, ValidatorResult, ValidationError } from "jsonschema";
+import { Request } from "express";
 import { ErrorType, Status, Priority, Label, CommentType } from "./constants.js";
-import { taskSchema } from "./validationSchema.js";
+import { taskSchema, planSchema } from "./validationSchema.js";
 
 export function containsSpecialChars(str: string): boolean {
     const specialChars = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
@@ -37,6 +38,11 @@ Validator.prototype.customFormats.nonEmptyMembersList = nonEmptyMembersList;
 export function validateTaskRequestBody(requestBody: any): ValidatorResult {
     const v = new Validator();
     return v.validate(requestBody, taskSchema);
+}
+
+export function validatePlanRequestBody(requestBody: Request): ValidatorResult {
+    const v = new Validator();
+    return v.validate(requestBody, planSchema);
 }
 
 export function processValidationErrors(validationErrs: ValidationError[]): ErrorType[] {

@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 
-import { validateTaskRequestBody, processValidationErrors } from "./helper.js";
-import TaskDAO from "./DAO/TaskDAO.js";
+import { validateTaskRequestBody, processValidationErrors } from "../helper.js";
+import TaskDAO from "../DAO/TaskDAO.js";
 
 const taskDao = new TaskDAO();
 

@@ -1,21 +1,40 @@
-import Plan from "../model/Plan.js";
-import connection from "../db.js";
-import { MysqlError } from "mysql";
+// import Plan from "../model/Plan.js";
+import connection, { executeQuery } from "../db.js";
+import { Request } from "express";
+// import { MysqlError } from "mysql";
 
 class PlanDAO {
 
-    public getPlans(): any {
-        let plans: Plan[] = [];
+    public async getPlans(): Promise<any> {
+        const query = 'select *  from plan';
 
-        connection.query('select *  from plan', (error: MysqlError, results: any, fields: any) => {
-            if(error) {
-                // console.error(error);
-                throw error;
-            } else if(results) {
-                return results;
-            }
-        });
-        
+        try {
+            const res = executeQuery(query, connection);
+            return res;
+        } catch(err) {
+            throw err;
+        }
+    }
+
+    public async addPlan(req: Request): Promise<any> {
+        const nowTime = Date.now();
+        const planName = req.body.name;
+
+        const query = `INSERT INTO plan (name, created, updated) VALUES ('${planName}', ${nowTime}, ${nowTime})`;
+
+        try {
+            const res = await executeQuery(query, connection);
+            return res;
+        } catch(err) {
+            throw err;
+        }
+    }
+
+    public insertPlan(req: Request): any {
+        const nowTime = Date.now();
+        const planName = req.body.name;
+
+        return `${planName} ${nowTime}`;
     }
 }
 
