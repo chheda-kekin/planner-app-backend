@@ -1,12 +1,10 @@
-import connection from "./db.js";
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 
 import PlanRoutes from "./routes/plan.js";
 import TaskRoutes from "./routes/task.js";
 import MemberRoutes from "./routes/member.js";
 
 import dotenv from "dotenv";
-// import { MysqlError } from "mysql";
 
 dotenv.config();
 
