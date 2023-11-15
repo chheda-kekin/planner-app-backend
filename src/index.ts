@@ -1,5 +1,4 @@
 import express, { Express } from "express";
-
 import PlanRoutes from "./routes/plan.js";
 import TaskRoutes from "./routes/task.js";
 import MemberRoutes from "./routes/member.js";
@@ -13,6 +12,10 @@ const app: Express = express();
 const port = process.env.PORT;
 
 app.use(express.json());
+app.use((req, res, next) => {
+    res.append('Access-Control-Allow-Origin', ['*']);
+    next();
+});
 app.use('/plans', PlanRoutes);
 app.use('/tasks', TaskRoutes);
 app.use('/member', MemberRoutes);
