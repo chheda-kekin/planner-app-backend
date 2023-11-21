@@ -3,12 +3,20 @@ import bodyParser from "body-parser";
 
 import { validateTaskRequestBody, processValidationErrors } from "../helper.js";
 import TaskDAO from "../DAO/TaskDAO.js";
+import MemberDAO from "../DAO/MemberDAO.js";
 
 const taskDao = new TaskDAO();
+const memberDao = new MemberDAO();
 
 const TaskRoutes = express.Router();
 
 TaskRoutes.use(express.json());
+
+TaskRoutes.use((req, res, next) => {
+    res.append('Access-Control-Allow-Origin', ['*']);
+    res.append('Access-Control-Allow-Headers', 'content-type');
+    next();
+});
 
 // const urlEncodedParser = bodyParser.urlencoded({extended: true});
 
@@ -17,7 +25,35 @@ TaskRoutes.get("/plan/:id", async (req: Request, res: Response) => {
 
     try {
         const tasks = await taskDao.getTasksByPlanId(planId);
-        res.status(200).send(tasks);
+        const tasksArr = tasks.reduce((acc: Array<any>, current: any) => {
+            const taskIndex = acc.findIndex((task: any) => current.id === task.id);
+
+            const currentMember = {
+                memberId: current.memberId,
+                firstName: current.firstName,
+                lastName: current.lastName
+            };
+
+            if(taskIndex === -1) {
+                const taskObj = {
+                    id: current.id,
+                    name: current.name,
+                    planId: current.planId,
+                    planName: current.planName,
+                    status: current.status,
+                    due: current.due,
+                    labels: current.labels,
+                    members: [currentMember]
+                };
+
+                acc.push(taskObj);
+            } else {
+                acc[taskIndex].members.push(currentMember);
+            }
+
+            return acc;
+        }, []);
+        res.status(200).send(tasksArr);
     } catch(err) {
         res.status(500).send(err);
     }

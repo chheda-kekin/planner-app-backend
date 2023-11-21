@@ -76,12 +76,17 @@ class TaskDAO {
     }
 
     public async getTasksByPlanId(planId: string): Promise<any> {
-        const query = `SELECT a.id AS id, a.plan_id AS plan_id, 
-                        a.name AS name, a.status AS status, a.due AS due, 
-                            a.members as members, a.labels as labels, 
-                            b.name AS plan_name 
-                            FROM task AS a INNER JOIN plan AS b 
-                            ON a.plan_id = b.id 
+        const query = `SELECT a.id AS id, a.plan_id AS planId,
+                        a.name AS name, a.status AS status, a.due AS due,
+                            a.labels as labels,
+                            b.name AS planName,
+                            c.id AS memberId,
+                            c.fname AS firstName,
+                            c.lname AS lastName
+                            FROM task AS a INNER JOIN plan AS b
+                            ON a.plan_id = b.id
+                            INNER JOIN member AS c
+                            ON JSON_CONTAINS(a.members, CAST(c.id as JSON), '$')
                             WHERE a.plan_id = ${planId}`;
                           
         try {

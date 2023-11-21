@@ -9,6 +9,12 @@ const planDao = new PlanDAO();
 
 PlanRoutes.use(express.json());
 
+PlanRoutes.use((req, res, next) => {
+    res.append('Access-Control-Allow-Origin', ['*']);
+    res.append('Access-Control-Allow-Headers', 'content-type');
+    next();
+});
+
 PlanRoutes.post('/add', bodyParser.json({}), async (req: Request, res: Response) => {
     
     // Validating request body for required params
