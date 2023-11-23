@@ -65,7 +65,7 @@ class TaskDAO {
                             a.due AS due, a.labels AS labels, 
                             b.name AS plan_name 
                             FROM task AS a INNER JOIN plan AS b on a.plan_id = b.id 
-                            WHERE JSON_CONTAINS(a.members, '2')`;
+                            WHERE JSON_CONTAINS(a.members, '2') AND a.is_removed = 'no'`;
 
         try {
             const res = await executeQuery(query, connection);
@@ -87,7 +87,7 @@ class TaskDAO {
                             ON a.plan_id = b.id
                             INNER JOIN member AS c
                             ON JSON_CONTAINS(a.members, CAST(c.id as JSON), '$')
-                            WHERE a.plan_id = ${planId}`;
+                            WHERE a.plan_id = ${planId} AND a.is_removed = 'no'`;
                           
         try {
             const res = await executeQuery(query, connection);
@@ -111,7 +111,7 @@ class TaskDAO {
     }
 
     public async deleteTaskById(id: string): Promise<any> {
-        const query = `DELETE FROM task WHERE id = ${id}`;
+        const query = `UPDATE task SET is_removed = 'yes' WHERE id = ${id}`
 
         try {
             return await executeQuery(query, connection);

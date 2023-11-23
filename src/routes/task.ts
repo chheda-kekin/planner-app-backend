@@ -15,6 +15,8 @@ TaskRoutes.use(express.json());
 TaskRoutes.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['*']);
     res.append('Access-Control-Allow-Headers', 'content-type');
+    res.append('Access-Control-Allow-Methods', ['*']);
+
     next();
 });
 
