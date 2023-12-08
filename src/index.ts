@@ -14,7 +14,7 @@ const port = process.env.PORT;
 app.use(express.json());
 app.use('/plans', PlanRoutes);
 app.use('/tasks', TaskRoutes);
-app.use('/member', MemberRoutes);
+app.use('/members', MemberRoutes);
 
 
 app.listen(port, () => {

@@ -7,7 +7,7 @@ import { Request } from "express";
 class PlanDAO {
 
     public async getPlans(): Promise<any> {
-        const query = 'SELECT count(b.id) AS task_count, b.status, b.id AS task_id, a.id AS plan_id, b.due AS due, a.name AS plan_name FROM plan AS a LEFT JOIN task AS b ON a.id = b.plan_id GROUP BY a.id, b.status, b.id';
+        const query = `SELECT b.id AS plan_id, b.name AS plan_name, count(*) AS task_count, a.status, a.id AS task_id, a.due AS due, a.is_removed FROM task AS a RIGHT JOIN plan AS b ON a.plan_id = b.id  GROUP BY b.id, a.status, a.id`;
 
         try {
             const res = await executeQuery(query, connection);
@@ -30,16 +30,18 @@ class PlanDAO {
             }, {});
 
             res.forEach((e: any) => {
-                if(e.status === Status.NotStarted) {
-                    temp[`${e.plan_id}`].notStarted++;
-                } else if(e.status === Status.InProgress) {
-                    temp[`${e.plan_id}`].inProgress++;
-                } else if(e.status === Status.Completed) {
-                    temp[`${e.plan_id}`].completed++;
-                }
-
-                if(e.due && Date.now() > e.due) {
-                    temp[`${e.plan_id}`].due++;
+                if(e.is_removed === 'no') {
+                    if(e.status === Status.NotStarted) {
+                        temp[`${e.plan_id}`].notStarted++;
+                    } else if(e.status === Status.InProgress) {
+                        temp[`${e.plan_id}`].inProgress++;
+                    } else if(e.status === Status.Completed) {
+                        temp[`${e.plan_id}`].completed++;
+                    }
+    
+                    if(e.due && Date.now() > e.due) {
+                        temp[`${e.plan_id}`].due++;
+                    }
                 }
             });
             return Object.values(temp);

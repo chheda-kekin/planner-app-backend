@@ -16,7 +16,6 @@ TaskRoutes.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['*']);
     res.append('Access-Control-Allow-Headers', 'content-type');
     res.append('Access-Control-Allow-Methods', ['*']);
-
     next();
 });
 
@@ -31,7 +30,7 @@ TaskRoutes.get("/plan/:id", async (req: Request, res: Response) => {
             const taskIndex = acc.findIndex((task: any) => current.id === task.id);
 
             const currentMember = {
-                memberId: current.memberId,
+                id: current.memberId,
                 firstName: current.firstName,
                 lastName: current.lastName
             };
@@ -77,7 +76,34 @@ TaskRoutes.get("/details/:id", async (req: Request, res: Response) => {
 
     try {
         const taskDetails = await taskDao.getTaskDetailsById(id);
-        res.status(200).send(taskDetails.shift());
+
+        let taskDataObj: any = {
+            id: taskDetails[0].id,
+            name: taskDetails[0].name,
+            planId: taskDetails[0].planId,
+            planName: taskDetails[0].planName,
+            status: taskDetails[0].status,
+            priority: taskDetails[0].priority,
+            start: taskDetails[0].start,
+            due: taskDetails[0].due,
+            created: taskDetails[0].created,
+            updated: taskDetails[0].updated,
+            notes: taskDetails[0].notes,
+            labels: taskDetails[0].labels ? JSON.parse(taskDetails[0].labels) : [],
+            comments: taskDetails[0].comments ? JSON.parse(taskDetails[0].comments): [],
+            members: []
+        };
+
+        taskDetails.forEach((current: any) => {
+            const member = {
+                id: current.memberId,
+                firstName: current.firstName,
+                lastName: current.lastName
+            };
+            taskDataObj.members.push(member);
+        });
+        
+        res.status(200).send(taskDataObj);
     } catch(err) {
         res.status(500).send(err);
     }
