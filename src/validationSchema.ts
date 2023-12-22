@@ -89,3 +89,25 @@ export const taskSchema = {
                     "comments"
                 ]
 };
+
+export const updateTaskSchema = {
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer"
+        },
+        "status": {
+            "type": "string",
+            "format": "isValidTaskStatus"
+        },
+        "dueDate": {
+            "type": "integer",
+            "format": "isValidDate"
+        }
+    },
+    "required": [
+        "id",
+        "status",
+        "dueDate"
+    ]
+};

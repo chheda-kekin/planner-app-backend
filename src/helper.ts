@@ -1,11 +1,12 @@
 import { Validator, ValidatorResult, ValidationError } from "jsonschema";
 import { Request } from "express";
 import { ErrorType, Status, Priority, Label, CommentType } from "./constants.js";
-import { taskSchema, planSchema } from "./validationSchema.js";
+import { taskSchema, planSchema, updateTaskSchema } from "./validationSchema.js";
 
 export function containsSpecialChars(str: string): boolean {
-    const specialChars = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
-    return ! specialChars.test(str);
+    // const specialChars = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+    // return ! specialChars.test(str);
+    return true;
 }
 
 Validator.prototype.customFormats.containsSpecialChars = containsSpecialChars;
@@ -40,6 +41,11 @@ export function validateTaskRequestBody(requestBody: any): ValidatorResult {
     return v.validate(requestBody, taskSchema);
 }
 
+export function validateTaskUpdateRequestBody(requestBody: any): ValidatorResult {
+    const v = new Validator();
+    return v.validate(requestBody, updateTaskSchema);
+}
+
 export function validatePlanRequestBody(requestBody: Request): ValidatorResult {
     const v = new Validator();
     return v.validate(requestBody, planSchema);
@@ -65,8 +71,8 @@ export function getLabelsString(labels: Label[]): string {
 }
 
 export function getCommentsString(comments: CommentType[]): string {
-    return comments.reduce((acc, {comment, member}, index, arr) => {
-        acc += `{"comment": "${comment}", "member": "${member}"}`;
+    return comments.reduce((acc, {comment, member, date}, index, arr) => {
+        acc += `{"comment": "${comment}", "member": "${member}", "date": "${date}"}`;
         if(index < arr.length - 1) {
             acc = acc + ',';
         }

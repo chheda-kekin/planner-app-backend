@@ -1,9 +1,12 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 
-import { validateTaskRequestBody, processValidationErrors } from "../helper.js";
+import { validateTaskRequestBody, processValidationErrors, 
+    validateTaskUpdateRequestBody } from "../helper.js";
+
 import TaskDAO from "../DAO/TaskDAO.js";
 import MemberDAO from "../DAO/MemberDAO.js";
+import { Status } from "../constants.js";
 
 const taskDao = new TaskDAO();
 const memberDao = new MemberDAO();
@@ -90,13 +93,23 @@ TaskRoutes.get("/details/:id", async (req: Request, res: Response) => {
             updated: taskDetails[0].updated,
             notes: taskDetails[0].notes,
             labels: taskDetails[0].labels ? JSON.parse(taskDetails[0].labels) : [],
-            comments: taskDetails[0].comments ? JSON.parse(taskDetails[0].comments): [],
+            comments: [],
             members: []
         };
 
+        const taskComments = taskDetails[0].comments ? JSON.parse(taskDetails[0].comments): [];
+
+        taskDataObj.comments = taskComments.map((c: any) => {
+            return {
+                member: parseInt(c.member),
+                comment: c.comment,
+                date: parseInt(c.date)
+            }
+        });
+
         taskDetails.forEach((current: any) => {
             const member = {
-                id: current.memberId,
+                id: parseInt(current.memberId),
                 firstName: current.firstName,
                 lastName: current.lastName
             };
@@ -131,6 +144,24 @@ TaskRoutes.put("/update", bodyParser.json({}), async (req: Request, res: Respons
             } catch(err) {
                 res.status(500).send(err);
             }
+        }
+    } else {
+        res.status(400).send(processValidationErrors(validationRes.errors));
+    }
+});
+
+TaskRoutes.put("/updateStatus", bodyParser.json({}), async (req: Request, res: Response) => {
+
+    // res.status(200).send(req.body);
+
+    const validationRes = validateTaskUpdateRequestBody(req.body);
+
+    if(validationRes.valid) {
+        try {
+            const updateRes = await taskDao.updateTaskStatusById(req);
+            res.status(200).send(updateRes);
+        } catch(err) {
+            res.status(500).send(err);
         }
     } else {
         res.status(400).send(processValidationErrors(validationRes.errors));

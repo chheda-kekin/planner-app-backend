@@ -11,6 +11,7 @@ export type ErrorType = {
 export type CommentType = {
     comment: string;
     member: number;
+    date: number;
 }
 
 export enum Status {

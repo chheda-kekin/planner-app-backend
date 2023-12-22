@@ -40,6 +40,18 @@ class TaskDAO {
         });
     }
 
+    public async updateTaskStatusById(taskReq: Request): Promise<any> {
+        const { id, status, dueDate } = taskReq.body;
+
+        const query = `UPDATE task SET status = "${status}", due = ${dueDate}, updated = ${Date.now()} WHERE id = ${id}`;
+
+        try {
+            return await executeQuery(query, connection);
+        } catch(err) {
+            throw err;
+        }
+    }
+
     public async addTask(req: Request): Promise<any> {
         const planId = req.body.planId;
         const taskName = req.body.name;
