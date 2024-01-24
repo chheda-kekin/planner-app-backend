@@ -1,5 +1,5 @@
-import { executeQuery } from "../db.js";
-import connection from "../db.js";
+import { Member } from "../constants.js";
+import connection, { executeQuery } from "../db.js";
 
 class MemberDAO {
 
@@ -23,6 +23,19 @@ class MemberDAO {
         if(searchKey !== '') {
             query = query + ` AND fname LIKE "%${searchKey.toLowerCase()}%" OR lname LIKE "%${searchKey.toLowerCase()}%"`;
         }
+
+        try {
+            const res = await executeQuery(query, connection);
+            return res;
+        } catch(err) {
+            throw err;
+        }
+    }
+
+    public async addMember(member: Member): Promise<any> {
+        let query = `INSERT INTO member (fname, lname, email, gender, phone, dob,  password, created, updated) 
+                        VALUES ('${member.firstName}', '${member.lastName}', '${member.email}', 
+                            '${member.gender}', '${member.phone}', '${member.dob}', '${member.password}', ${Date.now()}, ${Date.now()})`;
 
         try {
             const res = await executeQuery(query, connection);

@@ -21,7 +21,7 @@ PlanRoutes.post('/add', bodyParser.json({}), async (req: Request, res: Response)
     const validationRes = validatePlanRequestBody(req.body);
     if(validationRes.valid) {
         try {
-            const planRes = await planDao.addPlan(req)
+            const planRes = await planDao.addPlan(req);
             res.status(200).send(planRes);
         } catch(err) {
             res.status(500).send(err);

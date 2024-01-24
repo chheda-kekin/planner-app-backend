@@ -14,6 +14,16 @@ export type CommentType = {
     date: number;
 }
 
+export type Member = {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+    password: string;
+    gender: Gender;
+    dob: number;
+}
+
 export enum Status {
     NotStarted = 'Not Started',
     InProgress = 'In Progress',

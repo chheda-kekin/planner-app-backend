@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import { Member } from "../constants.js";
 import MemberDAO from "../DAO/MemberDAO.js";
 
 const MemberRoutes = express.Router();
@@ -19,6 +20,15 @@ MemberRoutes.get("/", async (req: Request, res: Response) => {
     try {
         const allMembers = await memberDao.getMembers(key);
         res.status(200).send(allMembers);
+    } catch(err) {
+        res.status(500).send(err);
+    }
+});
+
+MemberRoutes.post("/signup", async (req: Request, res: Response) => {
+    try {
+        const memberRes = await memberDao.addMember(req.body as Member);
+        res.status(200).send(memberRes);
     } catch(err) {
         res.status(500).send(err);
     }
